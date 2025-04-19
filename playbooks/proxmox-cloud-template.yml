@@ -1,0 +1,92 @@
+- name: Setup VM cloudinit template
+  hosts: proxmox
+  remote_user: root
+  become: true
+
+  tasks:
+    - name: Check if image file already exists
+      stat:
+        path: /var/lib/vz/template/iso/debian-12-nocloud-amd64.img
+      register: image_file
+
+    - name: Download latest debian tar archive
+      get_url:
+        url: https://cloud.debian.org/images/cloud/bookworm/latest/debian-12-nocloud-amd64.tar.xz
+        dest: /var/lib/vz/template/iso/debian-12-nocloud-amd64.tar.xz
+        mode: '0644'
+        checksum: sha512:83cc557ea4154aef16f636297a77a825350d2e5b6c5ee73003a42f256effadab70103481e9c599f298a153706c849032b0de96a7d405a6a3061e3e6baf1ed5e6
+      when: not image_file.stat.exists
+
+    - name: Unpack archive
+      unarchive:
+        src: /var/lib/vz/template/iso/debian-12-nocloud-amd64.tar.xz
+        dest: /var/lib/vz/template/iso
+        remote_src: true
+      when: not image_file.stat.exists
+
+    - name: Rename resulting .raw
+      copy:
+        src: /var/lib/vz/template/iso/disk.raw
+        dest: /var/lib/vz/template/iso/debian-12-nocloud-amd64.img
+        remote_src: true
+      when: not image_file.stat.exists
+
+    - name: Remove .raw file
+      file:
+        path: /var/lib/vz/template/iso/disk.raw
+        state: absent
+
+    - name: Remove tar archive
+      file:
+        path: /var/lib/vz/template/iso/debian-12-nocloud-amd64.tar.xz
+        state: absent
+
+    - name: Install QEMU guest agent
+      command:
+        cmd: "virt-customize -a debian-12-nocloud-amd64.img --install qemu-guest-agent"
+        chdir: /var/lib/vz/template/iso
+
+    - name: Register existing vm list
+      shell: "qm list | awk '{ if (NR != 1) print $1}'"
+      register: vm_list
+      failed_when: false
+      changed_when: false
+
+    - name: Create VM
+      command: "qm create 9001 --name 'debian-12-cloudinit-template' --memory 2048 --cores 2 --net0 virtio,bridge=vmbr0"
+      when: "'9001' not in vm_list.stdout_lines"
+
+    - name: Register vm config
+      shell: "qm config 9001"
+      register: vm_config
+      failed_when: false
+      changed_when: false
+
+    - name: Transform vm_config into dictionary.
+      set_fact:
+        vm_config_dict: "{{ dict( vm_config.stdout_lines | map('split', ':', 1) | map('map', 'trim') | list ) }}"
+
+    - name: Import disk image into VM
+      command:
+        cmd: "qm importdisk 9001 debian-12-nocloud-amd64.img local-zfs"
+        chdir: /var/lib/vz/template/iso
+
+    - name: Set SCSI controller
+      command: "qm set 9001 --scsihw virtio-scsi-pci --scsi0 local-zfs:vm-9001-disk-0"
+      when: "'virtio-scsi-psi' not in vm_config_dict.scsihw and 'local-zfs:vm-9001-disk-0' not in vm_config_dict.scsi0 and 'local-zfs:base-9001-disk-0' not in vm_config_dict.scsi0"
+
+    - name: Configure boot disk and order
+      command: "qm set 9001 --boot c --bootdisk scsi0"
+      when: "'c' not in vm_config_dict.boot and 'scsi0' not in vm_config_dict.bootdisk"
+
+    - name: Set drive to ide2 controller
+      command: "qm set 9001 --ide2 local-zfs:cloudinit"
+      when: "'local-zfs:vm-9001-cloudinit' not in vm_config_dict.ide2"
+
+    - name: Enable QEMU guest agent
+      command: "qm set 9001 --agent 1"
+      when: "vm_config_dict.agent != '1'"
+
+    - name: Convert VM into template
+      command: "qm template 9001"
+      when: "vm_config_dict.template != '1'"

@@ -1,0 +1,3 @@
+- Name proxmox host
+- Set port
+- Copy SSH key from client to device

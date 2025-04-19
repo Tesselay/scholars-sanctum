@@ -1,0 +1,91 @@
+- name: Add admin accounts on proxmox hosts and to proxmox datacenter
+  hosts: proxmox
+  remote_user: root
+  become: true
+
+  tasks:
+    - name: Add admin and ssh group
+      group:
+        name: "{{ item.name }}"
+        state: present
+      loop:
+        - name: admins
+        - name: ssh-users
+
+    - name: Create user accounts on hosts
+      user:
+        name: "{{ item }}"
+        groups: admins, ssh-users
+        shell: /bin/bash
+        create_home: yes
+        state: present
+      loop: "{{ admins }}"
+
+    - name: Grant passwordless sudo to admins group
+      become: yes
+      lineinfile:
+        path: /etc/sudoers
+        regexp: '^%admins\s+ALL=\(ALL\)\s+NOPASSWD:\s+ALL$'
+        line:   "%admins ALL=(ALL) NOPASSWD: ALL"
+        state: present
+        validate: "visudo -cf %s"
+
+    - name: Add ssh keys
+      authorized_key:
+        user: "{{ item }}"
+        key: "{{ lookup('file', '../assets/keys/' ~ item ~ '.key.pub') }}"
+        state: present
+      loop: "{{ admins }}"
+
+    - name: Create PAM user variables
+      set_fact:
+        pam_users: []
+    - set_fact:
+        pam_users: "{{ pam_users + [item + '@pam'] }}"
+      loop: "{{ admins }}"
+
+    - name: Register list of existing PVE users
+      command: "pveum user list --output-format json"
+      register: pve_user_list
+      failed_when: false
+      changed_when: false
+
+    - name: Add missing user accounts to datacenter
+      command: "pveum user add {{ item }}"
+      when: item not in (pve_user_list.stdout | from_json | map(attribute='userid') | list)
+      register: add_user_result
+      failed_when: add_user_result.rc != 0
+      changed_when: add_user_result.rc == 0
+      loop: "{{ pam_users }}"
+
+    - name: Register list of existing PVE groups
+      command: "pveum group list --output-format json"
+      register: pve_group_list
+      failed_when: false
+      changed_when: false
+
+    - name: Add admins group to datacenter if missing
+      command: "pveum group add Administrators"
+      when: "'Administrators' not in (pve_group_list.stdout | from_json | map(attribute='groupid') | list)"
+      register: add_user_result
+      failed_when: add_user_result.rc != 0
+      changed_when: add_user_result.rc == 0
+
+    - name: Register list of existing acl
+      command: "pveum acl list --output-format json"
+      register: pve_acl_list
+      failed_when: false
+      changed_when: false
+
+    - name: Add Administrator role for '/' namespace to administrator group
+      command: "pveum aclmod / -group Administrators -role Administrator"
+      when: pve_acl_list.stdout | from_json | selectattr('roleid', 'equalto', 'Administrator') | selectattr('ugid', 'equalto', 'Administrators') | list == []
+      register: add_role_result
+      failed_when: add_role_result.rc != 0
+      changed_when: add_role_result.rc == 0
+
+    - name: Add users to administrator group
+      command: "pveum user modify {{ item }} -group Administrators"
+      when: item not in (pve_group_list.stdout | from_json | selectattr('groupid', 'equalto', 'Administrators') | map(attribute='users') | list)
+      register: add_to_group_result
+      loop: "{{ pam_users }}"

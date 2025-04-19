@@ -1,0 +1,27 @@
+- name: Harden SSH configuration
+  hosts: proxmox
+  remote_user: root
+  become: true
+
+  handlers:
+    - name: restart ssh
+      service: name=ssh state=restarted
+
+  tasks:
+    - name: Disable password auth, root login and set port as well as allowed groups
+      lineinfile:
+        dest: /etc/ssh/sshd_config
+        regexp: "{{ item.regexp }}"
+        line: "{{ item.line }}"
+        state: present
+        validate: 'sshd -t -f %s'
+      loop:
+        - regexp: "^PasswordAuthentication"
+          line: "PasswordAuthentication no"
+        - regexp: "^PermitRootLogin"
+          line: "PermitRootLogin no"
+        - regexp: "^Port"
+          line: "Port {{ ansible_port }}"
+        - regexp: "^AllowGroups"
+          line: "AllowGroups ssh-users"
+      notify: restart ssh
