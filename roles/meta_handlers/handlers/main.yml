@@ -1,11 +1,11 @@
 ---
-- name: refresh apt cache
+- name: Refresh apt cache
   listen: update & upgrade
-  apt:
+  ansible.builtin.apt:
     update_cache: true
 
-- name: dist upgrade
+- name: Dist upgrade
   listen: update & upgrade
-  apt:
+  ansible.builtin.apt:
     upgrade: dist
     autoremove: true

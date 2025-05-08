@@ -1,3 +1,5 @@
 ---
-- include_tasks: add_keys.yml
-- include_tasks: configure_ssh.yml
+- name: INCLUDE TASKS to add ssh key to new admin account(s)
+  ansible.builtin.include_tasks: add_keys.yml
+- name: INCLUDE TASKS to harden ssh
+  ansible.builtin.include_tasks: configure_ssh.yml

@@ -1,3 +1,5 @@
 ---
-- include_tasks: add_admins.yml
-- include_tasks: configure_admin_group.yml
+- name: INCLUDE TASKS to add admins to PAM user realm
+  ansible.builtin.include_tasks: add_admins.yml
+- name: INCLUDE TASKS to configure PAM realm admin group
+  ansible.builtin.include_tasks: configure_admin_group.yml

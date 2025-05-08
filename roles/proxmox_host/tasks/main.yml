@@ -1,3 +1,5 @@
 ---
-- include_tasks: configure_repository.yml
-- include_tasks: install_vm_tools.yml
+- name: INCLUDE TASKS to configure proxmox repositories
+  ansible.builtin.include_tasks: configure_repository.yml
+- name: INCLUDE TASKS to install vm tools
+  ansible.builtin.include_tasks: install_vm_tools.yml

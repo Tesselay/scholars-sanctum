@@ -1,3 +1,5 @@
 ---
-- include_tasks: download_image.yml
-- include_tasks: set_template.yml
+- name: INCLUDE TASKS to download and configure distro image
+  ansible.builtin.include_tasks: download_image.yml
+- name: INCLUDE TASKS to create and configure vm template
+  ansible.builtin.include_tasks: set_template.yml

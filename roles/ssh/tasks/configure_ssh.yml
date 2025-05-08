@@ -1,6 +1,6 @@
 ---
 - name: Disable password auth, root login and set port as well as allowed groups
-  lineinfile:
+  ansible.builtin.lineinfile:
     path: /etc/ssh/sshd_config
     regexp: "{{ item.regexp }}"
     line: "{{ item.line }}"

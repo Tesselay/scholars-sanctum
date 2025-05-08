@@ -1,3 +1,6 @@
 ---
-- include_tasks: add_entities.yml
-- include_tasks: configure_permissions.yml
+- name: INCLUDE TASKS to add admins and groups
+  ansible.builtin.include_tasks: add_entities.yml
+
+- name: INCLUDE TASKS to configure permissions for new group(s)
+  ansible.builtin.include_tasks: configure_permissions.yml

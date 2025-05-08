@@ -1,3 +1,5 @@
 ---
-- include_tasks: apt_update_upgrade.yml
-- include_tasks: install_sudo.yml
+- name: INCLUDE TASKS to update apt cache and upgrade system
+  ansible.builtin.include_tasks: apt_update_upgrade.yml
+- name: INCLUDE TASKS to install sudo
+  ansible.builtin.include_tasks: install_sudo.yml

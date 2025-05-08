@@ -1,5 +1,4 @@
 ---
 - name: Install sudo
-  apt:
-    name: sudo
-    state: latest
+  ansible.builtin.apt:
+    name: sudo=1.9.13p3-1+deb12u1
