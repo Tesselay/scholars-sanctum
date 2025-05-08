@@ -1,0 +1,11 @@
+---
+- name: refresh apt cache
+  listen: update & upgrade
+  apt:
+    update_cache: true
+
+- name: dist upgrade
+  listen: update & upgrade
+  apt:
+    upgrade: dist
+    autoremove: true

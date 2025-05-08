@@ -1,0 +1,5 @@
+---
+- name: Install VM tools
+  package:
+    name: libguestfs-tools
+    state: latest

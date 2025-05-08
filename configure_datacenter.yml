@@ -1,0 +1,11 @@
+---
+- name: Configure datacenter
+  hosts: sanctum
+  become: true
+  tasks:
+    - name: Setup admins
+      ansible.builtin.include_role:
+        name: proxmox_datacenter
+    - name: Add templates
+      ansible.builtin.include_role:
+        name: proxmox_template

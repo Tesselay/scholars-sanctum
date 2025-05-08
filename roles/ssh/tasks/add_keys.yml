@@ -1,0 +1,16 @@
+---
+- name: Add ssh keys
+  authorized_key:
+    user: "{{ item.key }}"
+    key: "{{ lookup('file', lookup('env','HOME') + '/.ssh/id_rsa.pub') }}"
+    state: present
+  loop: "{{ vault_admins | dict2items }}"
+  no_log: true
+
+- name: Remove ssh keys from root
+  authorized_key:
+    user: root
+    key: "{{ lookup('file', lookup('env','HOME') + '/.ssh/id_rsa.pub') }}"
+    state: absent
+  loop: "{{ vault_admins | dict2items }}"
+  no_log: true

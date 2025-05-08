@@ -1,0 +1,51 @@
+---
+- name: Check if image file already exists
+  stat:
+    path: /var/lib/vz/template/iso/{{ img_name }}
+  register: image_file
+
+- name: Download latest tar archive
+  get_url:
+    url: "{{ img_src }}"
+    dest: /var/lib/vz/template/iso/{{ img_src_file }}
+    mode: "0644"
+    checksum: "{{ img_checksum }}"
+  when: not image_file.stat.exists
+
+- name: Unpack archive
+  unarchive:
+    src: /var/lib/vz/template/iso/{{ img_src_file }}
+    dest: /var/lib/vz/template/iso
+    remote_src: true
+  when: not image_file.stat.exists
+
+- name: Rename resulting .raw
+  copy:
+    src: /var/lib/vz/template/iso/disk.raw
+    dest: /var/lib/vz/template/iso/{{ img_name }}
+    remote_src: true
+  when: not image_file.stat.exists
+
+- name: Remove .raw file
+  file:
+    path: /var/lib/vz/template/iso/disk.raw
+    state: absent
+
+- name: Remove tar archive
+  file:
+    path: /var/lib/vz/template/iso/{{ img_src_file }}
+    state: absent
+
+- name: Check for qemu guest agent in image
+  command:
+    cmd: guestfish --ro -a {{ img_name }} -m /dev/sda1 exists /usr/sbin/qemu-ga
+    chdir: /var/lib/vz/template/iso
+  register: qga_check
+  failed_when: false
+  changed_when: false
+
+- name: Install QEMU guest agent
+  command:
+    cmd: virt-customize -a {{ img_name }} --install qemu-guest-agent
+    chdir: /var/lib/vz/template/iso
+  when: qga_check.rc != 0

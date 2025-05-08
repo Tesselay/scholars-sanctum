@@ -1,0 +1,19 @@
+---
+- name: Bootstrap proxmox host
+  hosts: sanctum
+  vars:
+    - ansible_port: 22
+    - ansible_user: root
+  tasks:
+    - name: Configure repository and install vm tools
+      ansible.builtin.include_role:
+        name: proxmox_host
+    - name: Install sudo
+      ansible.builtin.include_role:
+        name: common
+    - name: Add local admins
+      ansible.builtin.include_role:
+        name: admins
+    - name: Configure SSH
+      ansible.builtin.include_role:
+        name: ssh

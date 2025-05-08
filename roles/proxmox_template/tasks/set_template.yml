@@ -1,0 +1,46 @@
+---
+- name: Fetch JSON VM config
+  shell: pvesh get /nodes/sanctum/qemu/{{ tmpl_id }}/config --output-format=json
+  register: vm_conf
+  failed_when: false
+  changed_when: false
+
+- name: Transform vm_config into dictionary
+  set_fact:
+    vm_conf_dict: "{{ (vm_conf.stdout | from_json) if vm_conf.stdout else {} }}"
+
+- name: Create VM
+  command: qm create {{ tmpl_id }} --name '{{ tmpl_name }}' --memory {{ tmpl_memory }} --cores {{ tmpl_cores }} --net0 {{ tmpl_net }}
+  when: vm_conf.rc != 0
+
+- name: Import disk image into VM
+  command:
+    cmd: qm importdisk {{ tmpl_id }} {{ img_name }} local-zfs
+    chdir: /var/lib/vz/template/iso
+  when:
+    - vm_conf_dict.values() | select('search', tmpl_scsi_disk) | list | length == 0
+    - vm_conf_dict.values() | select('search', tmpl_scsi_disk_converted) | list | length == 0
+
+- name: Set SCSI controller
+  command: qm set {{ tmpl_id }} --scsihw {{ tmpl_controller }} --scsi0 {{ tmpl_scsi_disk }}
+  when:
+    - vm_conf_dict.get('scsihw', '') != tmpl_controller
+    - vm_conf_dict.get('scsi0', '') not in [tmpl_scsi_disk, tmpl_scsi_disk_converted]
+
+- name: Configure boot disk and order
+  command: qm set {{ tmpl_id }} --boot {{ tmpl_boot_order }} --bootdisk {{ tmpl_boot_disk }}
+  when:
+    - vm_conf_dict.get('boot', '') != tmpl_boot_order
+    - vm_conf_dict.get('bootdisk', '') != tmpl_boot_disk
+
+- name: Set volume to ide2 disk
+  command: qm set {{ tmpl_id }} --ide2 {{ tmpl_volume }}
+  when: tmpl_scsi_vol not in (vm_conf_dict.get('ide2', ''))
+
+- name: Enable QEMU guest agent
+  command: qm set {{ tmpl_id }} --agent 1
+  when: vm_conf_dict.get('agent', '') != "1"
+
+- name: Convert VM into template
+  command: qm template {{ tmpl_id }}
+  when: vm_conf_dict.get('template', '') != 1

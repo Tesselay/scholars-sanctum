@@ -1,0 +1,10 @@
+---
+tmpl_net: virtio,bridge=vmbr0
+tmpl_controller: virtio-scsi-pci
+tmpl_scsi_disk: "{{ tmpl_storage ~ ':vm-' ~ tmpl_id ~ '-disk-0' }}" # e.g. local-zfs:vm-9001-disk-0
+tmpl_boot_order: c
+tmpl_boot_disk: scsi0
+tmpl_volume: "{{ tmpl_storage ~ ':cloudinit' }}" # e.g. local-zfs:cloudinit
+
+tmpl_scsi_disk_converted: "{{ tmpl_storage ~ ':base-' ~ tmpl_id ~ '-disk-0' }}" # e.g. local-zfs:base-9001-disk-0
+tmpl_scsi_vol: "{{ tmpl_storage ~ ':vm-' ~ tmpl_id ~ '-cloudinit' }}" # e.g. local-zfs:vm-9001-cloudinit

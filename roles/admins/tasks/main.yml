@@ -1,0 +1,3 @@
+---
+- include_tasks: add_entities.yml
+- include_tasks: configure_permissions.yml

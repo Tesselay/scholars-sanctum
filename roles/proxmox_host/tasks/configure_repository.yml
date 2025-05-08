@@ -1,0 +1,16 @@
+---
+- name: Remove enterprise repositories
+  apt_repository:
+    repo: "{{ item.value }}"
+    filename: "{{ item.key }}"
+    state: absent
+    update_cache: false # It will try to update with the other repo(s) still activated, which will fail without configuring the enterprise repos for the host
+  loop: "{{ lookup('dict', repositories_removed) }}"
+
+- name: Add pve custom repository
+  apt_repository:
+    repo: "{{ item }}"
+    filename: pve-custom
+    state: present
+  loop: "{{ repositories }}"
+  notify: update & upgrade

@@ -1,0 +1,11 @@
+---
+img_src: https://cloud.debian.org/images/cloud/bookworm/20250416-2084/debian-12-generic-amd64-20250416-2084.tar.xz
+img_src_file: debian-12-generic-amd64-20250416-2084.tar.xz
+img_name: debian-12-generic-amd64.img
+img_checksum: sha512:ca1121ed779391ea8b3807f135049caa8571c6bfb5525715cd36cb435e3c7ca27d743c594a9c4a195ee7aff1902bb1ca77cf2fb3cdd75e9c94ed9bc9a4834a71
+
+tmpl_id: 9001
+tmpl_name: debian-12-cloudinit-template
+tmpl_storage: local-zfs
+tmpl_memory: 2048
+tmpl_cores: 2

@@ -1,0 +1,19 @@
+---
+- name: Add admin and ssh group
+  ansible.builtin.group:
+    name: "{{ item.name }}"
+    state: present
+  loop:
+    - name: admins
+    - name: ssh-users
+
+- name: Create user accounts on hosts
+  ansible.builtin.user:
+    name: "{{ item.key }}"
+    password: "{{ item.value }}"
+    groups: admins, ssh-users
+    shell: /bin/bash
+    create_home: true
+    state: present
+  loop: "{{ vault_admins | dict2items }}"
+  no_log: true

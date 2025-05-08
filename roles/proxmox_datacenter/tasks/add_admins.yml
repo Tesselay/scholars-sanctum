@@ -1,0 +1,22 @@
+---
+- name: Create PAM user variables
+  set_fact:
+    pam_users: []
+- set_fact:
+    pam_users: "{{ pam_users + [item.key + '@pam'] }}"
+  loop: "{{ vault_admins | dict2items }}"
+  no_log: true
+
+- name: Register list of existing PVE users
+  command: pveum user list --output-format json
+  register: pve_user_list
+  failed_when: false
+  changed_when: false
+
+- name: Add missing user accounts to datacenter
+  command: pveum user add {{ item }}
+  when: item not in (pve_user_list.stdout | from_json | map(attribute='userid') | list)
+  register: add_user_result
+  failed_when: add_user_result.rc != 0
+  changed_when: add_user_result.rc == 0
+  loop: "{{ pam_users }}"
