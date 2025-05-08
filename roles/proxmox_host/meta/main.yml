@@ -1,3 +1,13 @@
 ---
+galaxy_info:
+  author: "github.com/Tesselay"
+  description: "Proxmox host bootstrap role (private use)"
+  license: "GPL-3.0-only"
+  min_ansible_version: "2.14"
+  platforms:
+    - name: Debian
+      versions:
+        - all
+        - bookworm
 dependencies:
   - role: meta_handlers

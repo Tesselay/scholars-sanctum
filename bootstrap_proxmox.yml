@@ -2,8 +2,8 @@
 - name: Bootstrap proxmox host
   hosts: sanctum
   vars:
-    - ansible_port: 22
-    - ansible_user: root
+    ansible_port: 22
+    ansible_user: root
   tasks:
     - name: Configure repository and install vm tools
       ansible.builtin.include_role:

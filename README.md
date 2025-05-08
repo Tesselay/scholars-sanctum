@@ -184,6 +184,9 @@ Distributed under the GNU GPLv3. See `LICENSE.md` for more information.
 * [Ansible Community Documentation](https://docs.ansible.com/ansible/latest/index.html)
 * [RedHat Automation Blog](https://www.redhat.com/en/blog/channel/management-and-automation)
 * [Proxmox Documentation](https://pve.proxmox.com/pve-docs/)
+* [Ansible Lint](https://ansible.readthedocs.io/projects/lint/)
+
+
 * [Best README template](https://github.com/othneildrew/Best-README-Template)
 * [Choose an Open Source License](https://choosealicense.com)
 * [Img Shields](https://shields.io)

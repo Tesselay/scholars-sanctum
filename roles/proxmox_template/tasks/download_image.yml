@@ -50,4 +50,3 @@
     cmd: virt-customize -a {{ img_name }} --install qemu-guest-agent
     chdir: /var/lib/vz/template/iso
   when: qga_check.rc != 0
-  failed_when: 
