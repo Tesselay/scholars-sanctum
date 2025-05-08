@@ -145,7 +145,7 @@ Alternatively omit `ansible_become_password` and provide `ask-become-pass` ad-ho
 ## Roadmap
 
 * [ ] Configure storage per Ansible
-* [ ] template generation as a module?
+* [ ] Add role argument validation
 
 
 
