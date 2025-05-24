@@ -15,4 +15,4 @@
       line: Port {{ ssh_port }}
     - regexp: ^(#?)AllowGroups
       line: AllowGroups ssh-users
-  notify: restart ssh
+  notify: Restart ssh
