@@ -68,21 +68,6 @@ For admins and the template I provided variables so the roles can be configured 
 
 <!-- GETTING STARTED -->
 ## Getting Started
-
-**1.** Setup SSH agent on client
-
-Only really recommended when using a passphrase-protected ssh key so that you don't have to reenter it every time you run a play.
-```shell
-eval "$(ssh-agent -s)"
-ssh-add <private-key-location>
-```
-
-**2.** Run playbooks
-```shell
-ansible-playbook bootstrap_proxmox.yml -i ./inventory/hosts.ini --ask-vault-pass
-ansible-playbook configure_datacenter.yml -i ./inventory/hosts.ini --ask-vault-pass
-```
-
 ### Prerequisites
 
 * Linux or WSL
@@ -134,7 +119,19 @@ Alternatively omit `ansible_become_password` and provide `ask-become-pass` ad-ho
 
 <!-- USAGE EXAMPLES -->
 ## Usage
+**1.** Setup SSH agent on client
 
+Only really recommended when using a passphrase-protected ssh key so that you don't have to reenter it every time you run a play.
+```shell
+eval "$(ssh-agent -s)"
+ssh-add <private-key-location>
+```
+
+**2.** Run playbooks
+```shell
+ansible-playbook bootstrap_proxmox.yml -i ./inventory/hosts.ini --ask-vault-pass
+ansible-playbook configure_datacenter.yml -i ./inventory/hosts.ini --ask-vault-pass
+```
 
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
