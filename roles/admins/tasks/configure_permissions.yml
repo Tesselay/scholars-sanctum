@@ -2,7 +2,7 @@
 - name: Grant sudo to admins group
   become: true
   ansible.builtin.lineinfile:
-    path: /etc/sudoers
+    path: /etc/sudoers.d/10-admins
     regexp: ^%admins\s+ALL=\(ALL\)\s+ALL$
     line: "%admins ALL=(ALL) ALL"
     state: present
