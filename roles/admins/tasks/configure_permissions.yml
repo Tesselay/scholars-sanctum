@@ -6,4 +6,5 @@
     regexp: ^%admins\s+ALL=\(ALL\)\s+ALL$
     line: "%admins ALL=(ALL) ALL"
     state: present
+    create: true
     validate: visudo -cf %s
